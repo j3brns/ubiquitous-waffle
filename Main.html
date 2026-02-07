@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AQA GCSE Geography (8035) | Strategic Learning Centre</title>
+    
+    <!-- Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <style>
+        /* Core System Styles */
+        body { background-color: #f8fafc; font-family: 'Inter', system-ui, -apple-system, sans-serif; color: #1e293b; height: 100vh; overflow: hidden; }
+        
+        /* Scrollbars */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Flashcard Animation */
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        .card-flip-inner { transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        .flipped .card-flip-inner { transform: rotateY(180deg); }
+
+        /* AI & Typography */
+        .prose-academic p { margin-bottom: 1.25em; line-height: 1.75; font-size: 0.95rem; color: #334155; }
+        .prose-academic strong { color: #0f172a; font-weight: 700; }
+        .prose-academic h3 { color: #0f172a; font-weight: 800; font-size: 1.1rem; margin-top: 1.5em; margin-bottom: 0.75em; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.25em; }
+        .prose-academic ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1.25em; color: #334155; }
+        
+        /* Components */
+        .loader { border: 3px solid #e2e8f0; border-top: 3px solid #4f46e5; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .game-card.matched { background-color: #dcfce7; border-color: #22c55e; color: #15803d; pointer-events: none; opacity: 0.8; }
+        .game-card.selected { border-color: #4f46e5; background-color: #eef2ff; box-shadow: 0 0 0 2px #4f46e5; transform: scale(1.02); }
+        
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        geo: { dark: '#0f172a', primary: '#0369a1', secondary: '#059669', accent: '#d97706', ai: '#7c3aed' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="flex">
+
+    <!-- Error Trap -->
+    <div id="error-trap" class="hidden fixed top-0 left-0 w-full bg-red-600 text-white p-2 z-[100] text-center font-bold font-mono text-xs shadow-lg"></div>
+
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-[#0f172a] text-white flex-col flex shrink-0 shadow-2xl z-50">
+        <div class="p-6 bg-[#1e293b] border-b border-slate-700">
+            <h1 class="font-bold text-lg tracking-tight text-white">Geo<span class="text-indigo-400">Hub</span> 8035</h1>
+            <p class="text-[10px] text-slate-400 mt-1 uppercase tracking-wider font-semibold">AQA Specification</p>
+        </div>
+        <nav class="flex-1 overflow-y-auto custom-scroll py-6 px-3 space-y-2">
+            <button onclick="router('dashboard')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 transition-all text-slate-300 border-l-4 border-transparent hover:border-indigo-500 group" id="nav-dashboard">
+                <span class="text-xl mr-3">📊</span><span class="font-medium">Dashboard</span>
+            </button>
+
+            <div class="pt-4 pb-2 pl-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Syllabus Modules</div>
+            <button onclick="router('paper1')" class="nav-btn w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-800 transition text-slate-300 flex items-center gap-3" id="nav-paper1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span><span>Paper 1: Physical</span></button>
+            <button onclick="router('paper2')" class="nav-btn w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-800 transition text-slate-300 flex items-center gap-3" id="nav-paper2"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span><span>Paper 2: Human</span></button>
+            <button onclick="router('paper3')" class="nav-btn w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-800 transition text-slate-300 flex items-center gap-3" id="nav-paper3"><span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span><span>Paper 3: Apps</span></button>
+
+            <div class="pt-4 pb-2 pl-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tools</div>
+            <button onclick="router('aitutor')" class="nav-btn w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-800 transition text-slate-300 group" id="nav-aitutor"><span class="text-lg">✨</span><span>AI Tutor</span></button>
+            <button onclick="router('vocab')" class="nav-btn w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-800 transition text-slate-300 group" id="nav-vocab"><span class="text-lg">📖</span><span>Vocab Vault</span></button>
+            <button onclick="router('examhq')" class="nav-btn w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-800 transition text-slate-300 group" id="nav-examhq"><span class="text-lg">✍️</span><span>Exam HQ</span></button>
+            <button onclick="router('skills')" class="nav-btn w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-800 transition text-slate-300 group" id="nav-skills"><span class="text-lg">📐</span><span>Skills Gym</span></button>
+        </nav>
+    </aside>
+
+    <!-- MAIN STAGE -->
+    <main id="app-stage" class="flex-1 bg-slate-50 h-screen overflow-hidden relative flex flex-col p-6"></main>
+
+    <!-- LOGIC -->
+    <script>
+        // --- 1. CONFIG ---
+        const apiKey = ""; 
+        window.onerror = function(msg, src, line) { document.getElementById('error-trap').innerHTML = `⚠️ Error: ${msg} (Line ${line})`; document.getElementById('error-trap').classList.remove('hidden'); };
+
+        // --- 2. GLOBAL STORE ---
+        let appStore = {
+            view: 'dashboard',
+            completedTopics: 0,
+            vocabIndex: 0,
+            examQuestion: null,
+            mathChart: null,
+            isExaminerMode: false,
+            // Deep Data for Syllabus
+            geoData: {
+                paper1: {
+                    title: "Living with the Physical Environment", color: "text-emerald-700",
+                    sections: [
+                        {
+                            title: "Tectonic Hazards",
+                            prose: `
+                                <h3>Plate Tectonics Theory</h3>
+                                <p>The Earth's crust is divided into plates driven by <strong>Slab Pull</strong> (gravity pulling dense oceanic plates down) and convection currents. Where plates meet, margins form. At <strong>Constructive margins</strong>, plates move apart, allowing magma to rise and form shield volcanoes (e.g., Mid-Atlantic Ridge). At <strong>Destructive margins</strong>, the denser oceanic plate subducts beneath the continental plate, creating composite volcanoes and deep ocean trenches.</p>
+                                <h3>Case Study: Chile vs Nepal</h3>
+                                <p>We contrast a HIC (Chile) with a LIC (Nepal) to understand how wealth affects impact. <strong>Chile (2010):</strong> Magnitude 8.8. 500 deaths. Cost $30bn. Rapid response (Route 5 repaired in 24hrs). <strong>Nepal (2015):</strong> Magnitude 7.9. 9,000 deaths. Cost $5bn. Slow response; relied on aid. Landslides blocked rivers (secondary effect).</p>
+                            `,
+                            tip: "Do not confuse the <strong>Focus</strong> (underground origin) with the <strong>Epicentre</strong> (surface point directly above).",
+                            flashcards: [{term: "Slab Pull", def: "Gravity pulls dense plate into mantle."}, {term: "Subduction", def: "Oceanic plate forced under continental."}]
+                        },
+                        {
+                            title: "Weather Hazards",
+                            prose: `
+                                <h3>Tropical Storms</h3>
+                                <p>Tropical storms (hurricanes/typhoons) form over oceans with temperatures above <strong>27°C</strong>. Warm, moist air rises rapidly (Low Pressure), condensing to form clouds. The <strong>Coriolis Effect</strong> causes the storm to spin. As it moves over land, it loses its energy source (warm water) and decays.</p>
+                                <h3>Case Study: Typhoon Haiyan (2013)</h3>
+                                <p>A Category 5 storm hitting the Philippines (LIC). <strong>Primary Effects:</strong> 6,300 killed, 90% of Tacloban destroyed. <strong>Secondary Effects:</strong> Disease outbreaks, looting, oil leak contaminating fishing waters. <strong>Response:</strong> 'Build Back Better' scheme to upgrade buildings.</p>
+                            `,
+                            tip: "Storm Surges are not 'big waves'; they are a local rise in sea level caused by low pressure.",
+                            flashcards: [{term: "Coriolis Effect", def: "Earth's spin causes air to rotate."}, {term: "Storm Surge", def: "Sea level rise due to low pressure."}]
+                        }
+                    ]
+                },
+                paper2: {
+                    title: "Challenges in the Human Environment", color: "text-amber-700",
+                    sections: [
+                        {
+                            title: "Urban Issues (Rio de Janeiro)",
+                            prose: `
+                                <h3>Urbanisation in NEEs</h3>
+                                <p>Rio is a classic case of rapid urbanisation driven by <strong>Rural-Urban Migration</strong> and <strong>Natural Increase</strong>. This creates a divided city: the wealthy South Zone vs the poor North Zone. The rapid influx leads to <strong>Squatter Settlements</strong> (Favelas) like Rocinha, built illegally on steep slopes.</p>
+                                <h3>Evaluation: Favela Bairro</h3>
+                                <p>The Favela Bairro project was a 'Site and Service' scheme. It successfully paved roads, installed cable cars, and improved water supply. However, the improvements led to rent rises, pushing the poorest residents out to non-improved favelas, suggesting it failed to solve the root poverty.</p>
+                            `,
+                            tip: "When evaluating, use the 'However' rule. Identify a success, then immediately identify a limitation.",
+                            flashcards: [{term: "Natural Increase", def: "Births > Deaths."}, {term: "Brownfield", def: "Land previously built on."}]
+                        }
+                    ]
+                },
+                paper3: {
+                    title: "Geographical Applications", color: "text-sky-700",
+                    sections: [
+                        {
+                            title: "Fieldwork Enquiry",
+                            prose: `
+                                <h3>The Enquiry Process</h3>
+                                <p>You must know your specific hypothesis. The cycle is: 1. Hypothesis -> 2. Data Collection -> 3. Presentation -> 4. Analysis -> 5. Conclusion -> 6. Evaluation.</p>
+                                <h3>Sampling Methods</h3>
+                                <p><strong>Random Sampling</strong> avoids operator bias but may miss key areas. <strong>Systematic Sampling</strong> (e.g., every 10th metre) ensures even coverage across a transect. <strong>Stratified Sampling</strong> ensures all subgroups are represented proportionally.</p>
+                            `,
+                            tip: "Paper 3 questions will ask you to justify your data collection methods. Why did you use a quadrat? To ensure accuracy and repeatability.",
+                            flashcards: [{term: "Quantitative", def: "Numerical data (objective)."}, {term: "Qualitative", def: "Descriptive data (subjective)."}]
+                        }
+                    ]
+                }
+            }
+        };
+
+        const vocabList = ["Mitigation", "Adaptation", "Urbanisation", "Deprivation", "Sustainability", "Eutrophication", "Hydraulic Action"];
+
+        // --- 3. CONTROLLER ---
+        function router(view) {
+            appStore.view = view;
+            const stage = document.getElementById('app-stage');
+            
+            // Clean
+            if (appStore.mathChart) { appStore.mathChart.destroy(); appStore.mathChart = null; }
+
+            // Nav
+            document.querySelectorAll('.nav-btn').forEach(b => {
+                b.classList.remove('bg-indigo-600', 'text-white');
+                b.classList.add('text-slate-300');
+            });
+            const active = document.getElementById(`nav-${view}`);
+            if(active) { active.classList.add('bg-indigo-600', 'text-white'); active.classList.remove('text-slate-300'); }
+
+            // Route
+            switch(view) {
+                case 'dashboard': stage.innerHTML = renderDashboard(); break;
+                case 'paper1': case 'paper2': case 'paper3': stage.innerHTML = renderModule(view); break;
+                case 'vocab': stage.innerHTML = renderVocabVault(); loadVocabCard(vocabList[appStore.vocabIndex]); break;
+                case 'examhq': stage.innerHTML = renderExamHQ(); break;
+                case 'aitutor': stage.innerHTML = renderAITutor(); break;
+                case 'skills': stage.innerHTML = renderSkillsGym(); break;
+            }
+        }
+
+        // --- 4. VIEW GENERATORS ---
+
+        function renderDashboard() {
+            return `
+                <div class="p-8 h-full overflow-y-auto custom-scroll max-w-7xl mx-auto">
+                    <header class="mb-8">
+                        <h2 class="text-3xl font-black text-slate-800 tracking-tight">Command Centre</h2>
+                        <p class="text-slate-500 font-medium">AQA Specification 8035</p>
+                    </header>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 class="font-bold text-slate-700 mb-4 flex items-center gap-2"><span>💡</span> Examiner's Daily Insight</h3>
+                            <div class="bg-amber-50 border-l-4 border-amber-500 p-6 rounded-r-xl">
+                                <p class="text-amber-900 font-serif text-lg italic">"In 9-mark evaluation questions, you cannot reach Level 3 without a substantiated conclusion. Decide <strong>'To what extent'</strong> you agree and justify it with evidence."</p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                             <h3 class="font-bold text-slate-700 mb-2">Progress</h3>
+                             <div class="text-4xl font-black text-indigo-600 mb-2">${appStore.completedTopics} <span class="text-lg text-slate-400 font-medium">/ 12 Modules</span></div>
+                             <div class="w-full bg-slate-100 rounded-full h-2.5 mb-4"><div class="bg-indigo-600 h-2.5 rounded-full" style="width: ${(appStore.completedTopics/12)*100}%"></div></div>
+                             <div class="flex gap-3">
+                                <button onclick="router('examhq')" class="flex-1 py-3 bg-indigo-50 text-indigo-700 rounded-xl font-bold hover:bg-indigo-100 transition border border-indigo-200">Go to Exam HQ</button>
+                                <button onclick="router('skills')" class="flex-1 py-3 bg-emerald-50 text-emerald-700 rounded-xl font-bold hover:bg-emerald-100 transition border border-emerald-200">Go to Skills Gym</button>
+                             </div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function renderModule(paperId) {
+            const data = appStore.geoData[paperId];
+            return `
+                <div class="p-8 h-full overflow-y-auto custom-scroll animate-fade-in max-w-5xl mx-auto">
+                    <header class="border-b border-slate-200 pb-6 mb-8"><h2 class="text-4xl font-black ${data.color} tracking-tight">${data.title}</h2></header>
+                    <div class="space-y-12">
+                        ${data.sections.map((section, idx) => `
+                            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                                <div class="bg-slate-50 p-6 border-b border-slate-200"><h3 class="text-xl font-bold text-slate-800">${section.title}</h3></div>
+                                <div class="p-8 space-y-8">
+                                    <div class="prose-academic text-base text-slate-700 leading-relaxed max-w-none">${section.prose}</div>
+                                    ${section.tip ? `<div class="bg-red-50 p-5 rounded-xl flex gap-4 items-start border border-red-100"><span class="text-2xl">⚠️</span><div><strong class="text-red-800 text-xs uppercase tracking-wider">Examiner Warning</strong><p class="text-red-700 font-medium">${section.tip}</p></div></div>` : ''}
+                                    <div class="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
+                                        ${section.flashcards.map(fc => `
+                                            <div class="group h-24 perspective-1000 cursor-pointer" onclick="this.classList.toggle('flipped')">
+                                                <div class="relative w-full h-full text-center transition-transform duration-500 transform-style-3d shadow-sm rounded-xl border border-slate-200 hover:border-indigo-400 bg-white card-flip-inner">
+                                                    <div class="absolute w-full h-full backface-hidden flex items-center justify-center p-2"><span class="font-bold text-slate-700 text-sm">${fc.term}</span></div>
+                                                    <div class="absolute w-full h-full backface-hidden bg-slate-800 text-white rounded-xl flex items-center justify-center p-2 rotate-y-180"><p class="text-xs leading-snug">${fc.def}</p></div>
+                                                </div>
+                                            </div>`).join('')}
+                                    </div>
+                                    <div class="flex justify-end pt-4"><button onclick="this.innerText='✓ REVISED'; this.className='px-6 py-2 rounded-full font-bold text-sm border bg-emerald-100 text-emerald-700 border-emerald-200 transition-colors shadow-sm cursor-default'; appStore.completedTopics++;" class="px-6 py-2 rounded-full font-bold text-sm border bg-white hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 border-slate-300 hover:border-emerald-200 transition">Mark as Complete</button></div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+        }
+
+        // --- AI TUTOR (Enhanced) ---
+        function renderAITutor() {
+            return `
+                <div class="flex h-full p-6 gap-6 animate-fade-in">
+                    <div class="w-80 bg-white border border-slate-200 p-6 flex flex-col gap-6 rounded-2xl shadow-sm h-full">
+                        <div>
+                            <h2 class="text-2xl font-bold text-indigo-600">AI Tutor</h2>
+                            <p class="text-xs text-slate-500 mt-1">Context-aware geography specialist.</p>
+                        </div>
+                        
+                        <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 cursor-pointer" onclick="togglePersona()">
+                            <div class="w-10 h-6 bg-slate-300 rounded-full relative transition-colors" id="persona-bg"><div class="w-4 h-4 bg-white rounded-full absolute top-1 left-1 transition-transform" id="persona-dot"></div></div>
+                            <span class="text-xs font-bold text-slate-600" id="persona-text">Mode: Friendly</span>
+                        </div>
+
+                        <div class="space-y-3">
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Didactic Modes</p>
+                            <button onclick="injectPrompt('Ask me a Socratic question to test my depth of understanding on this topic.')" class="w-full text-left px-4 py-3 text-xs font-bold bg-indigo-50 border border-indigo-100 rounded-xl hover:bg-indigo-100 text-indigo-700 transition">🧠 Socratic Questioning</button>
+                            <button onclick="injectPrompt('Give me a real-world analogy to explain this concept.')" class="w-full text-left px-4 py-3 text-xs font-bold bg-emerald-50 border border-emerald-100 rounded-xl hover:bg-emerald-100 text-emerald-700 transition">💡 Give Analogy</button>
+                            <button onclick="injectPrompt('What are the common misconceptions students make on this topic?')" class="w-full text-left px-4 py-3 text-xs font-bold bg-amber-50 border border-amber-100 rounded-xl hover:bg-amber-100 text-amber-700 transition">⚠️ Common Pitfalls</button>
+                        </div>
+                    </div>
+                    <div class="flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div id="chat-history" class="flex-1 overflow-y-auto p-8 space-y-6 custom-scroll">
+                            <div class="flex justify-start"><div class="bg-slate-100 p-4 rounded-2xl rounded-tl-none text-sm text-slate-700 font-medium shadow-sm">Hello! I'm ready to help you revise.</div></div>
+                        </div>
+                        <div class="p-6 bg-white border-t border-slate-100">
+                            <div class="relative">
+                                <input type="text" id="chat-input" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 px-6 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-inner" placeholder="Type your question..." onkeydown="if(event.key==='Enter') sendChat()">
+                                <button onclick="sendChat()" class="absolute right-3 top-3 bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 transition shadow-md"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        // --- SKILLS GYM ---
+        function renderSkillsGym() {
+            return `
+                <div class="p-8 h-full overflow-y-auto custom-scroll max-w-6xl mx-auto animate-fade-in">
+                    <header class="mb-8"><h2 class="text-3xl font-black text-slate-800 tracking-tight">Skills Gym</h2><p class="text-slate-500 mt-2">AO4 Mastery: Maths & Graphs</p></header>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="bg-indigo-50 border border-indigo-100 p-6 rounded-2xl h-fit">
+                            <h3 class="font-bold text-indigo-900 mb-4 text-xs uppercase tracking-wide">Worked Examples</h3>
+                            <div class="space-y-4 text-sm text-indigo-800">
+                                <div><p class="font-bold">Mean</p><p class="font-mono bg-white p-2 rounded text-xs mt-1">Sum ÷ Count</p></div>
+                                <div><p class="font-bold">Range</p><p class="font-mono bg-white p-2 rounded text-xs mt-1">Max - Min</p></div>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-2 space-y-6">
+                            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2"><span>🧮</span> Stats Drill Engine</h3>
+                                    <button onclick="genStats()" class="bg-indigo-50 text-indigo-700 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-100 border border-indigo-200">New Drill</button>
+                                </div>
+                                <div id="stats-area">
+                                    <table class="stat-table mb-6 w-full"><tbody id="stats-body"></tbody></table>
+                                    <p id="stats-q" class="font-bold text-slate-800 mb-4"></p>
+                                    <div class="flex gap-3">
+                                        <input type="number" id="stats-ans" class="border border-slate-300 rounded-lg px-4 py-2 text-sm flex-1 focus:ring-2 focus:ring-indigo-500" placeholder="Enter result...">
+                                        <button onclick="checkStats()" class="bg-indigo-600 text-white px-6 rounded-lg text-sm font-bold hover:bg-indigo-700">Check</button>
+                                    </div>
+                                    <div id="stats-fb" class="mt-4 text-sm font-bold min-h-[20px]"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        // --- VOCAB VAULT ---
+        function renderVocabVault() {
+            return `
+                <div class="flex h-full p-6 gap-6 animate-fade-in">
+                    <div class="w-64 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
+                        <div class="p-4 bg-slate-50 border-b border-slate-100 font-bold text-xs uppercase text-slate-500 tracking-wider">Word List</div>
+                        <div class="flex-1 overflow-y-auto custom-scroll p-2 space-y-1">
+                            ${vocabList.map((w, i) => `<button onclick="appStore.vocabIndex=${i}; loadVocabCard('${w}')" class="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 transition truncate font-medium">${w}</button>`).join('')}
+                        </div>
+                    </div>
+                    <div id="vocab-display" class="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 p-8 overflow-y-auto flex items-center justify-center">
+                        <div class="text-slate-400 text-sm font-medium">Select a word to begin deep dive.</div>
+                    </div>
+                </div>`;
+        }
+
+        // --- EXAM HQ ---
+        function renderExamHQ() {
+            return `
+                <div class="p-8 h-full overflow-y-auto custom-scroll max-w-5xl mx-auto animate-fade-in">
+                    <header class="mb-8 flex justify-between items-center">
+                        <div>
+                            <h2 class="text-3xl font-black text-slate-800">Exam HQ</h2>
+                            <p class="text-slate-500 mt-1">Examiner Workout & 9-Marker Generator</p>
+                        </div>
+                        <button onclick="generateExamQuestion()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition flex items-center gap-2">
+                            <span>🎲</span> Generate New 9-Marker
+                        </button>
+                    </header>
+                    <div id="exam-stage" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 min-h-[400px] flex flex-col justify-center items-center text-slate-400">
+                        <div class="text-6xl mb-4">✍️</div><p class="font-medium">Click "Generate" to start your workout.</p>
+                    </div>
+                </div>`;
+        }
+
+        // --- LOGIC: API & HELPERS ---
+        async function fetchGemini(system, user) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = { contents: [{ parts: [{ text: user }] }], systemInstruction: { parts: [{ text: system }] } };
+            const response = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
+        }
+
+        function safeJSON(text) {
+            try { return JSON.parse(text.replace(/```json/g, '').replace(/```/g, '').trim()); } 
+            catch (e) { console.error("JSON Parse Error", e); return null; }
+        }
+
+        // --- FEATURE FUNCTIONS ---
+        function togglePersona() {
+            appStore.isExaminerMode = !appStore.isExaminerMode;
+            const bg = document.getElementById('persona-bg'); const dot = document.getElementById('persona-dot'); const txt = document.getElementById('persona-text');
+            if(appStore.isExaminerMode) { bg.classList.replace('bg-slate-300','bg-red-500'); dot.style.transform='translateX(100%)'; txt.innerText="Mode: Examiner"; txt.classList.add('text-red-600'); }
+            else { bg.classList.replace('bg-red-500','bg-slate-300'); dot.style.transform='translateX(0)'; txt.innerText="Mode: Friendly"; txt.classList.remove('text-red-600'); }
+        }
+
+        function injectPrompt(txt) { document.getElementById('chat-input').value = txt; sendChat(); }
+        async function sendChat() {
+            const input = document.getElementById('chat-input'); const hist = document.getElementById('chat-history'); const txt = input.value.trim(); if(!txt) return;
+            hist.innerHTML += `<div class="flex justify-end animate-fade-in"><div class="bg-indigo-600 text-white p-3 rounded-2xl rounded-tr-none shadow-sm max-w-[80%] text-sm">${txt}</div></div>`;
+            input.value = ''; hist.scrollTop = hist.scrollHeight;
+            const persona = appStore.isExaminerMode ? "Strict AQA Senior Examiner. Focus on mark schemes and AO1/2/3." : "Helpful Geography Tutor. Use analogies.";
+            const reply = await fetchGemini(persona, txt);
+            hist.innerHTML += `<div class="flex justify-start animate-fade-in"><div class="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm max-w-[80%] text-sm text-slate-700 prose-ai">${marked.parse(reply)}</div></div>`;
+            hist.scrollTop = hist.scrollHeight;
+        }
+
+        async function genStats() {
+            const body = document.getElementById('stats-body');
+            body.innerHTML = "<tr><td class='p-4 text-slate-400 italic'>Generating Drill...</td></tr>";
+            const prompt = `Generate a geography maths drill. JSON: { "data": [{"Label":"A", "Val":10}, {"Label":"B", "Val":20}], "question": "Calculate Mean", "answer": 15 }`;
+            const raw = await fetchGemini("JSON Generator", prompt);
+            const data = safeJSON(raw);
+            if(data) {
+                appStore.statsAnswer = data.answer;
+                body.innerHTML = data.data.map(r => `<tr><td>${r.Label}</td><td class="font-mono text-right font-bold text-slate-700">${r.Val}</td></tr>`).join('');
+                document.getElementById('stats-q').innerText = data.question;
+            }
+        }
+        function checkStats() {
+            const val = parseFloat(document.getElementById('stats-ans').value);
+            const fb = document.getElementById('stats-fb');
+            fb.innerText = Math.abs(val - appStore.statsAnswer) < 0.5 ? "✅ Correct!" : `❌ Answer: ${appStore.statsAnswer}`;
+            fb.className = Math.abs(val - appStore.statsAnswer) < 0.5 ? "mt-4 text-sm font-bold text-emerald-600" : "mt-4 text-sm font-bold text-red-600";
+        }
+
+        async function loadVocabCard(word) {
+            const display = document.getElementById('vocab-display');
+            display.innerHTML = `<div class="loader"></div>`;
+            const prompt = `Generate a deep-dive vocab card for "${word}". Output strictly valid JSON: {word, definition, etymology, exam_context, warning, joke}.`;
+            const raw = await fetchGemini("JSON Generator", prompt);
+            const data = safeJSON(raw);
+            if(data) {
+                display.innerHTML = `
+                    <div class="w-full max-w-3xl animate-fade-in space-y-8">
+                        <div class="border-b border-slate-100 pb-6"><h1 class="text-5xl font-black text-slate-800 mb-4 tracking-tight">${data.word}</h1><p class="text-xl text-slate-600 leading-relaxed">${data.definition}</p></div>
+                        <div class="grid grid-cols-2 gap-6"><div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-100"><h4 class="text-xs font-bold text-indigo-500 uppercase mb-2 tracking-widest">Etymology</h4><p class="text-sm text-indigo-900 italic leading-relaxed">"${data.etymology}"</p></div><div class="bg-amber-50 p-6 rounded-2xl border border-amber-100"><h4 class="text-xs font-bold text-amber-600 uppercase mb-2 tracking-widest">⚠️ Watch Out</h4><p class="text-sm text-amber-900 font-medium">${data.warning}</p></div></div>
+                        <div class="bg-slate-800 text-slate-200 p-8 rounded-2xl shadow-lg relative overflow-hidden"><div class="absolute top-4 right-6 text-4xl opacity-10">📝</div><h3 class="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-3">9-Marker Context</h3><p class="font-serif italic text-lg leading-relaxed text-slate-100">"${data.exam_context}"</p></div>
+                        <div class="text-center pt-8"><p class="text-xs text-slate-400 italic">${data.joke}</p><button onclick="nextVocab()" class="mt-4 bg-indigo-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-indigo-700 transition transform hover:scale-105">Next Term &rarr;</button></div>
+                    </div>`;
+            } else { display.innerHTML = "Error loading card."; }
+        }
+        function nextVocab() { appStore.vocabIndex = (appStore.vocabIndex + 1) % vocabList.length; loadVocabCard(vocabList[appStore.vocabIndex]); }
+
+        async function generateExamQuestion() {
+            const stage = document.getElementById('exam-stage');
+            stage.innerHTML = `<div class="flex flex-col items-center gap-4"><div class="loader"></div><p class="text-sm font-medium text-indigo-600">Consulting Examiner Database...</p></div>`;
+            const prompt = "Generate a challenging 9-mark geography question (AQA 8035). Include a short 'Examiner Hint'. Output Markdown.";
+            appStore.examQuestion = await fetchGemini("Exam generator", prompt);
+            stage.innerHTML = `
+                <div class="w-full animate-fade-in text-left">
+                    <div class="bg-slate-50 border-l-4 border-indigo-500 p-8 rounded-r-xl shadow-sm mb-8"><div class="prose-ai text-lg text-slate-800">${marked.parse(appStore.examQuestion)}</div></div>
+                    <div class="flex flex-col gap-4">
+                        <textarea id="user-answer" class="w-full border border-slate-300 rounded-xl p-4 text-sm h-64 focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-none shadow-inner bg-white" placeholder="Type your full answer here..."></textarea>
+                        <div class="flex justify-end gap-2"><button onclick="markAnswer()" class="bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-700 transition shadow-md flex items-center justify-center gap-2"><span>📝</span> Mark My Answer</button></div>
+                        <div id="mark-output" class="mt-6 hidden bg-white border border-slate-200 rounded-xl p-6 prose-ai"></div>
+                    </div>
+                </div>`;
+            stage.classList.remove('items-center', 'justify-center', 'text-slate-400', 'min-h-[400px]');
+        }
+        async function markAnswer() {
+            const txt = document.getElementById('user-answer').value; if(!txt) return;
+            const out = document.getElementById('mark-output'); out.classList.remove('hidden'); out.innerHTML = `<div class="loader"></div>`;
+            const fb = await fetchGemini("Strict AQA Examiner", `Mark this /9. Q: "${appStore.examQuestion}". A: "${txt}". Output Markdown table with Mark, WWW, EBI, and a Rewrite.`);
+            out.innerHTML = `<div class="bg-slate-50 p-4 rounded-lg prose-ai">${marked.parse(fb)}</div>`;
+        }
+
+        // Boot
+        window.addEventListener('load', () => router('dashboard'));
+    </script>
+</body>
+</html>
+
+
